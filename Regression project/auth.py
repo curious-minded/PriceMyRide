@@ -8,11 +8,12 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-FIREBASE_API_KEY = os.getenv("apiKey")
+FIREBASE_API_KEY = st.secrets["apiKey"]
 FIREBASE_AUTH_URL = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + FIREBASE_API_KEY
-DATABASE_URL = os.getenv("database_url")
-STORAGE = os.getenv("storage1")
-cred = credentials.Certificate("json_key.json")
+DATABASE_URL = st.secrets["database_url"]
+STORAGE = st.secrets["storage1"]
+firebase_credentials = st.secrets["firebase"]
+cred = credentials.Certificate(firebase_credentials)
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {'databaseURL': DATABASE_URL,
                                   'storageBucket': STORAGE})
