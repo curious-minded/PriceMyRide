@@ -2,10 +2,10 @@ streamlit
 datetime
 firebase_admin
 requests
-os
 PIL
 dotenv
 importlib.util
 pickle
 pandas
 plotly.express
+python==3.8
