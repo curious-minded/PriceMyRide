@@ -6,7 +6,6 @@ import os
 from dotenv import load_dotenv
 import requests
 import importlib.util
-from httpx_oauth.clients.google import GoogleOAuth2
 load_dotenv()
 st.set_page_config(page_title="GEMINI Assistant", page_icon="🦉")
 
