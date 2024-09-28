@@ -1,10 +1,6 @@
 streamlit
-datetime
-firebase_admin
-requests
-dotenv
-importlib.util
-pickle
+firebase-admin
+python-dotenv
 pandas
-plotly.express
-python==3.8
+plotly
+setuptools
