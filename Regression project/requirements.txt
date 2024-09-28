@@ -2,7 +2,6 @@ streamlit
 datetime
 firebase_admin
 requests
-PIL
 dotenv
 importlib.util
 pickle
