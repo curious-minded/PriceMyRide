@@ -9,9 +9,8 @@ from dotenv import load_dotenv
 from PIL import Image
 load_dotenv()
 
-DATABASE_URL = st.secrets["database_url"]
-firebase_credentials = st.secrets["firebase"]
-cred = credentials.Certificate(firebase_credentials)  
+DATABASE_URL = os.getenv("database_url")
+cred = credentials.Certificate("json_key.json")  
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
         'databaseURL': DATABASE_URL
