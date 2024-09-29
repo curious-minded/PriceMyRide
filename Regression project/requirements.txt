@@ -7,3 +7,5 @@ setuptools
 google-generativeai
 Pillow
 requests
+scikit-learn
+numpy
