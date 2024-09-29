@@ -16,69 +16,6 @@ if not firebase_admin._apps:
         'databaseURL': DATABASE_URL
     })
 
-st.markdown(
-    """
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
-    
-    html, body, [class*="css"]  {
-        font-family: 'Roboto', sans-serif;
-    }
-    
-    /* Ensure sidebar is visible on smaller screens */
-    .css-1lcbmhc.e1fqkh3o1 {
-        width: 300px !important; /* Adjust sidebar width */
-        visibility: visible !important;
-    }
-    
-    /* Darker background overlay for text visibility */
-    .stApp {
-        background-image: url("https://images.unsplash.com/photo-1681245027457-70100eac35e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        position: relative;
-        color: #FFFFFF;
-        min-height: 100vh;
-        margin: 0;
-        padding: 0;
-        filter: brightness(0.9);  /* Reduce brightness for better visibility */
-    }
-    
-    /* Darker overlay to improve contrast with text */
-    .stApp::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);  /* Darker overlay for better contrast */
-        z-index: 1;
-    }
-
-    .stApp > div {
-        position: relative;
-        z-index: 2;
-        padding: 20px;
-    }
-    
-    /* Gold title with text shadow for improved readability */
-    .stTitle {
-        color: #FFD700;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-    }
-    
-    /* Sidebar background and font */
-    .css-1lcbmhc {
-        background-color: rgba(0, 0, 0, 0.7); /* Dark background for sidebar */
-        color: #FFF; /* White text in sidebar */
-    }
-    
-    </style>
-    """, unsafe_allow_html=True
-)
-
 def show_community_page():
     st.write("Check out what the other users are doing!")
     try:
@@ -282,18 +219,70 @@ elif page == "About":
     help="Once you are done selecting, please click outside the drop-down menu."
 )
     if selected_brands:
-        filtered_cars = car[car['Brand'].isin(selected_brands)]
-        car_model_counts = filtered_cars.groupby(['Brand', 'Model']).size().reset_index(name='Count')
-        car_model_counts['Percentage'] = car_model_counts.groupby('Brand')['Count'].transform(lambda x: (x / x.sum()) * 100)
-
-        fig4 = px.pie(
-            car_model_counts,
-            names='Model',
-            values='Percentage',
-            title='Percentage of Models in each selected Brands as present in the dataset',
-            hole=0.3,
-            color='Model' 
-        )
-        st.plotly_chart(fig4, use_container_width=True)
+        for brand in selected_brands:
+            brand_data = car[car['Brand'] == brand]
+            brand_model_counts = brand_data.groupby('Model').size().reset_index(name='Count')
+            brand_model_counts['Percentage'] = (brand_model_counts['Count'] / brand_model_counts['Count'].sum()) * 100
+            
+            fig = px.pie(
+                brand_model_counts,
+                names='Model',
+                values='Percentage',
+                title=f'Percentage of data of each model in {brand}',
+                hole=0.3,
+                color='Model'
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
     else:
-        st.warning("Please select at least one car brand to display the chart.")
+        st.warning("Please select at least one car brand to display the charts.")
+
+
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+    
+    html, body, [class*="css"]  {
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    .stApp {
+        background-image: url("https://images.unsplash.com/photo-1681245027457-70100eac35e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        position: relative;
+        color: #FFFFFF;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        filter: brightness(0.9);  /* Reduce brightness for better visibility */
+    }
+    
+    .stApp::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);  /* Darker overlay for better contrast */
+        z-index: 1;
+    }
+
+    .stApp > div {
+        position: relative;
+        z-index: 2;
+        padding: 20px;
+    }
+    
+    /* Gold title with text shadow for improved readability */
+    .stTitle {
+        color: #FFD700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+    }
+    
+    </style>
+    """, unsafe_allow_html=True
+)
