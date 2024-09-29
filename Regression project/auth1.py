@@ -113,6 +113,8 @@ def login_page():
         **Instructions:**
         - If you do not have an account please SignUp.
         - If you are new to this site please ensure the password is at least 6 characters long while creating an account.
+        - One should use digits or special symbols as well to make the password strong.
+        - You can always change the theme according to your preference from top right.
         """)
     
     choice = st.selectbox('Login/SignUp', ['Login', 'SignUp'])
