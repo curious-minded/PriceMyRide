@@ -175,23 +175,31 @@ elif page == "Explore Models":
                 ).reset_index()
                 st.dataframe(comparison_table)
 
+                avg_price_per_year = filtered_data.groupby(['year_built', 'Model']).agg(
+                avg_price=('Price', 'mean')
+            ).reset_index()
                 fig2 = px.bar(
-                    filtered_data,
+                    avg_price_per_year,
                     x='year_built',
-                    y='Price',
+                    y='avg_price',
                     color='Model',
                      barmode='group',
                     title='Price Variation of Selected Models Over Years',
+                    labels={'avg_price': 'Average Price'}
                 )
                 st.plotly_chart(fig2, use_container_width=True)
 
+                avg_price_per_model = filtered_data.groupby(['Model', 'Brand']).agg(
+                avg_price=('Price', 'mean')
+            ).reset_index()
                 fig3 = px.bar(
-                    filtered_data,
+                    avg_price_per_model,
                     x='Model',
-                    y='Price',
+                    y='avg_price',
                     color = 'Brand',
                      barmode='group',
                     title='Price Distribution by Brand',
+                    labels={'avg_price': 'Average Price'}
                 )
                 st.plotly_chart(fig3, use_container_width=True)
         else:
