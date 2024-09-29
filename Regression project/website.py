@@ -277,7 +277,7 @@ elif page == "About":
     """)
 
     selected_brands = st.multiselect(
-    'Select car brands to compare',
+    'Select car brands to get an idea of what the dataset comprises of',
     car['Brand'].unique(),
     help="Once you are done selecting, please click outside the drop-down menu."
 )
@@ -290,7 +290,7 @@ elif page == "About":
             car_model_counts,
             names='Model',
             values='Percentage',
-            title='Percentage of Models in Selected Brands as present in the dataset',
+            title='Percentage of Models in each selected Brands as present in the dataset',
             hole=0.3,
             color='Model' 
         )
