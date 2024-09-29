@@ -16,41 +16,36 @@ if not firebase_admin._apps:
         'databaseURL': DATABASE_URL
     })
 
-st.sidebar.subheader(f"Welcome to your dashboard {st.session_state.get('handle', 'User')}!")
 st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+    
     html, body, [class*="css"]  {
         font-family: 'Roboto', sans-serif;
     }
-    .title-icon-container {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        padding: 10px 0;
+    
+    /* Ensure sidebar is visible on smaller screens */
+    .css-1lcbmhc.e1fqkh3o1 {
+        width: 300px !important; /* Adjust sidebar width */
+        visibility: visible !important;
     }
-    .title-icon-container .icon {
-        width: 50px;
-        margin-right: 10px;
-    }
-    .title-icon-container .title {
-        font-size: 40px;
-        font-weight: bold;
-        color: #00BFFF;
-    }
+    
+    /* Darker background overlay for text visibility */
     .stApp {
         background-image: url("https://images.unsplash.com/photo-1681245027457-70100eac35e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
         position: relative;
-        color: #FFFFFF; /* Default text color */
-        min-height: 100vh; /* Ensure the background covers the full viewport height */
-        margin: 0; /* Remove default margin */
-        padding: 0; /* Remove default padding */
-        filter: brightness(1.0);
+        color: #FFFFFF;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        filter: brightness(0.9);  /* Reduce brightness for better visibility */
     }
+    
+    /* Darker overlay to improve contrast with text */
     .stApp::before {
         content: "";
         position: absolute;
@@ -58,18 +53,28 @@ st.markdown(
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.4); /* Black overlay with 40% opacity to slightly brighten */
+        background-color: rgba(0, 0, 0, 0.6);  /* Darker overlay for better contrast */
         z-index: 1;
     }
+
     .stApp > div {
         position: relative;
         z-index: 2;
-        padding: 20px; /* Padding to keep content away from edges */
+        padding: 20px;
     }
+    
+    /* Gold title with text shadow for improved readability */
     .stTitle {
-        color: #FFD700; /* Gold color for the title */
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); /* Darker text shadow for better readability */
+        color: #FFD700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
     }
+    
+    /* Sidebar background and font */
+    .css-1lcbmhc {
+        background-color: rgba(0, 0, 0, 0.7); /* Dark background for sidebar */
+        color: #FFF; /* White text in sidebar */
+    }
+    
     </style>
     """, unsafe_allow_html=True
 )
@@ -109,6 +114,7 @@ def format_indian_number(number):
         formatted_number = f"{number:.2f}"
     return formatted_number
 
+st.sidebar.subheader(f"Welcome to your dashboard {st.session_state.get('handle', 'User')}!")
 page = st.sidebar.selectbox("Select a page:", ["Home", "Predictions", "Explore Models", "Community", "About"])
 
 if page == "Home":
