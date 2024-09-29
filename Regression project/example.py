@@ -62,11 +62,19 @@ def generate_download_link(text, filename):
     )
 st.sidebar.subheader(f"Welcome to your dashboard {st.session_state.get('handle', 'User')}!")
 option = st.sidebar.selectbox("How can I assist you?", ['Chat', 'Image Analysis', 'Speech-to-text'], help = 'Choose a functionality. If you are done click outside the menu to close it.')
+st.markdown("""
+<style>
+[data-testid="stSidebar"] {
+        background-color: rgba(0, 0, 0, 0.7);  /* Sidebar with semi-transparent black */
+        color: white;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 if option == 'Chat':
     example_text = st.sidebar.selectbox("You can start by asking me...", ['Tell me a joke', 'Tell me a fun fact', 'Invent a new superhero and describe their powers.',
                                                                        'Name a dish and tell me its recipe', 'Recommend me a holiday destination', 'Recommend me some good movies', 'Recommend me a new hobby',
-                                                                       'Write a poem', 'Write a letter', 'Recommend me some books for reading', 'Give a format for Resume'])
+                                                                       'Write a poem', 'Write a letter', 'Recommend me some books for reading', 'Give a format for Resume', "Tell me the thought for the day"])
     if st.sidebar.button("Use Example"):
         st.session_state['input_text'] = example_text
         submit_text()
