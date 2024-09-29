@@ -126,13 +126,13 @@ def login_page():
                 st.error('Passwords do not match. Please try again')
             else:
                  all_users_ref = db.reference('users')
-                all_users = all_users_ref.get()
+                 all_users = all_users_ref.get()
                 
-                if all_users:
-                    existing_handles = [user_data['handle'] for user_data in all_users.values() if 'handle' in user_data]
-                    if handle in existing_handles:
-                        st.error(f"The handle '{handle}' is already taken. Please choose another one.")
-                        return
+                 if all_users:
+                     existing_handles = [user_data['handle'] for user_data in all_users.values() if 'handle' in user_data]
+                     if handle in existing_handles:
+                         st.error(f"The handle '{handle}' is already taken. Please choose another one.")
+                         return
                 try:
                     user = auth.create_user(
                         email=email,
