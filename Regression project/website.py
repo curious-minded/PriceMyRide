@@ -247,17 +247,17 @@ st.markdown(
         font-family: 'Roboto', sans-serif;
     }
     
+    [data-testid="stSidebar"] {
+        background-color: rgba(0, 0, 0, 0.7);  /* Sidebar with semi-transparent black */
+        color: white;
+    }
+    
     .stApp {
         background-image: url("https://images.unsplash.com/photo-1681245027457-70100eac35e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
         background-size: cover;
-        background-repeat: no-repeat;
         background-attachment: fixed;
-        position: relative;
         color: #FFFFFF;
-        min-height: 100vh;
-        margin: 0;
-        padding: 0;
-        filter: brightness(0.9);  /* Reduce brightness for better visibility */
+        filter: brightness(150%);
     }
     
     .stApp::before {
@@ -267,17 +267,10 @@ st.markdown(
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);  /* Darker overlay for better contrast */
-        z-index: 1;
-    }
-
-    .stApp > div {
-        position: relative;
-        z-index: 2;
-        padding: 20px;
+        background: rgba(0, 0, 0, 0.7); /* Semi-transparent dark overlay */
+        z-index: -1; /* Ensure the overlay is behind other elements */
     }
     
-    /* Gold title with text shadow for improved readability */
     .stTitle {
         color: #FFD700;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
