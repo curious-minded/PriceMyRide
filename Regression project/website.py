@@ -265,7 +265,7 @@ st.markdown(
         background-size: cover;
         background-attachment: fixed;
         color: #FFFFFF;
-        filter: brightness(150%);
+        filter: brightness(105%);
     }
     
     .stApp::before {
