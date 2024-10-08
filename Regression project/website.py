@@ -260,10 +260,10 @@ elif page == "About":
     - This web service utilizes machine learning to predict the prices of used cars based on various attributes. 
     - It uses the concepts of Random Forests and Grid Search CV to predict the prices of cars based on the attributes
     provided by the user which can produce highly varying results if changed. 
-    - The data was taken from the [Kaggle website](https://www.kaggle.com/). 
+    - The data was taken from the [Kaggle](https://www.kaggle.com/). 
     - It provides insights into the pricing trends and allows users to explore car models. 
     - Data might not contain various other brands/models or the latest updates in the automobile industry so the predictions may vary.
-    - [Streamlit library] (https://streamlit.io/) and [Firebase] (https://firebase.google.com/) were used for front-end and back-end services respectively. 
+    - [Streamlit](https://streamlit.io/) and [Firebase](https://firebase.google.com/) were used for front-end and back-end services respectively. 
     - Plotly was used to plot bar graphs and pie charts for data analysis.
     """)
 
