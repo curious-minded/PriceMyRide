@@ -51,6 +51,48 @@ def format_indian_number(number):
         formatted_number = f"{number:.2f}"
     return formatted_number
 
+st.markdown(
+    """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+    
+    html, body, [class*="css"]  {
+        font-family: 'Roboto', sans-serif;
+    }
+    
+    [data-testid="stSidebar"] {
+        background-color: rgba(0, 0, 0, 0.7);  /* Sidebar with semi-transparent black */
+        color: white;
+    }
+    
+    .stApp {
+        background-image: url("https://images.unsplash.com/photo-1681245027457-70100eac35e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+        background-size: cover;
+        background-attachment: fixed;
+        color: #FFFFFF;
+        filter: brightness(105%);
+    }
+    
+    .stApp::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7); /* Semi-transparent dark overlay */
+        z-index: -1; /* Ensure the overlay is behind other elements */
+    }
+    
+    .stTitle {
+        color: #FFD700;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+    }
+    
+    </style>
+    """, unsafe_allow_html=True
+)
+
 st.sidebar.subheader(f"Welcome to your dashboard {st.session_state.get('handle', 'User')}!")
 page = st.sidebar.selectbox("Select a page:", ["Home", "Predictions", "Explore Models", "Community", "About"])
 
@@ -245,45 +287,7 @@ elif page == "About":
     else:
         st.warning("Please select at least one car brand to display the charts.")
 
-
-st.markdown(
-    """
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
-    
-    html, body, [class*="css"]  {
-        font-family: 'Roboto', sans-serif;
-    }
-    
-    [data-testid="stSidebar"] {
-        background-color: rgba(0, 0, 0, 0.7);  /* Sidebar with semi-transparent black */
-        color: white;
-    }
-    
-    .stApp {
-        background-image: url("https://images.unsplash.com/photo-1681245027457-70100eac35e2?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
-        background-size: cover;
-        background-attachment: fixed;
-        color: #FFFFFF;
-        filter: brightness(105%);
-    }
-    
-    .stApp::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7); /* Semi-transparent dark overlay */
-        z-index: -1; /* Ensure the overlay is behind other elements */
-    }
-    
-    .stTitle {
-        color: #FFD700;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-    }
-    
-    </style>
-    """, unsafe_allow_html=True
-)
+st.write("""
+    ---
+    *© 2024 PriceMyRide. The most accurate car price predictor. All rights reserved.*
+    """)
