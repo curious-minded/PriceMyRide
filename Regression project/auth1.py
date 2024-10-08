@@ -176,6 +176,11 @@ def login_page():
                 st.session_state['handle'] = response.get('handle', 'User')
                 st.rerun()
 
+    st.write("""
+        ---
+        *© 2024 Gemini Assistant. All rights reserved.*
+        """)
+
 def main_website():
     main_website_path = 'example.py'
     spec = importlib.util.spec_from_file_location("main_website", main_website_path)
