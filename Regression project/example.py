@@ -150,7 +150,7 @@ elif option == 'Speech-to-text':
 elif option == 'About':
     st.header("About")
     st.write(""" 
-    ###About this Web Service
+    ### About this Web Service
     - It is an AI chatbot clone of Google Gemini.
     - This web service utilizes API keys from [Google Gemini](https://www.gemini.google.com/) to incorporate chat based and image to text models.
     - This web service makes use of the [Assembly AI](https://www.assemblyai.com/) model for speech to text functionality.
