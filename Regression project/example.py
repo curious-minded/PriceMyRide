@@ -152,8 +152,8 @@ elif option == 'About':
     st.write(""" 
     ###About this Web Service
     - It is an AI chatbot clone of Google Gemini.
-    - This web service utilizes API keys from [Google Gemini] (https://ai.google/discover/gemini) to incorporate chat based and image to text models.
-    - This web service makes use of the [AssemblyAI](https://www.assemblyai.com/) model for speech to text functionality.
+    - This web service utilizes API keys from [Google Gemini](https://ai.google/discover/gemini) to incorporate chat based and image to text models.
+    - This web service makes use of the [Assembly AI](https://www.assemblyai.com/) model for speech to text functionality.
     - The web service is built using [Streamlit](https://streamlit.io/), with backend services powered by [Firebase](https://firebase.google.com/)""")
     
 with st.sidebar.expander("Chat History"):
