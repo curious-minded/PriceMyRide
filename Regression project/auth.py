@@ -189,6 +189,11 @@ def login_page():
                 st.session_state['handle'] = response.get('handle', 'User')
                 st.rerun()
 
+    st.write("""
+    ---
+    *© 2024 PriceMyRide. The most accurate car price predictor. All rights reserved.*
+    """)
+
 def main_website():
     main_website_path = 'website.py' 
     spec = importlib.util.spec_from_file_location("main_website", main_website_path)
