@@ -111,10 +111,10 @@ def login_page():
     with st.expander("Help", expanded=False):
         st.write("""
         **Instructions:**
-        - If you do not have an account please SignUp.
+        - If you do not have an account please SignUp. Please use a valid email.
         - If you are new to this site please ensure the password is at least 6 characters long while creating an account.
         - One should use digits or special symbols as well to make the password strong.
-        - You can always change the theme according to your preference from top right.
+        - You can always change the theme/mode according to your preference from top right.
         """)
     
     choice = st.selectbox('Login/SignUp', ['Login', 'SignUp'])
@@ -147,21 +147,11 @@ def login_page():
                         'created_at': datetime.now().isoformat()
                     })
                     st.session_state['handle'] = handle
-                    st.title('Welcome ' + handle)
-                    st.info('Login via the drop-down menu')
+                    st.session_state['logged_in'] = True
+                    st.rerun()
                 except FirebaseError as e:
                     st.error(f'Error creating account: {e}')
-
-    # elif choice == 'Sign in with Google':
-    #     if st.button('Sign in with Google'):
-    #         try:
-    #             response = google_sign_in()
-    #             st.session_state['logged_in'] = True
-    #             st.session_state['handle'] = response.get('handle', 'User')
-    #             st.rerun()
-    #         except ValueError as e:
-    #             st.error(f'Error signing in with Google: {e}')
-    
+                    
     elif choice == 'Login':
         email = st.text_input('Please enter your email address')
         password = st.text_input('Please enter your password', type='password')
