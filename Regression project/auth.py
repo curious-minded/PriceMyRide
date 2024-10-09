@@ -135,10 +135,10 @@ def login_page():
     with st.expander("Help", expanded=False):
         st.write(""" 
         **Instructions:**
-        - If you do not have an account please SignUp.
+        - If you do not have an account please SignUp. Please use a valid email.
         - Ensure that the password is at least 6 characters long while creating an account.
         - One should use digits or special symbols as well to make the password strong.
-        - You can always change the theme according to your preference from top right.
+        - You can always change the theme/mode according to your preference from top right.
         """)
         
     choice = st.selectbox('Login/SignUp', ['Login', 'SignUp'])
@@ -172,8 +172,8 @@ def login_page():
                         'created_at': datetime.now().isoformat()
                     })
                     st.session_state['handle'] = handle
-                    st.title(f'Welcome {handle}')
-                    st.info('Login via the drop-down menu')
+                    st.session_state['logged_in'] = True
+                    st.rerun()
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
 
