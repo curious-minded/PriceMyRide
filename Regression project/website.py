@@ -10,6 +10,8 @@ from PIL import Image
 load_dotenv()
 
 DATABASE_URL = os.getenv("database_url")
+DROPBOX_URL = os.getenv("DROPBOX_URL")
+FILE_NAME = "RandomForestModel.pkl"
 cred = credentials.Certificate("json_key.json")  
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
@@ -123,7 +125,14 @@ elif page == "Predictions":
 
     with col2:
         model_df = car[car['Model'] == selected_model]
-        year_built = st.number_input('Select the year car was manufactured in', min_value=car["year_built"].min(), max_value=car["year_built"].max(), value=2007)
+        min_year = model_df["year_built"].min()
+        max_year = model_df["year_built"].max()
+        year_built = st.number_input(
+        'Select the year the car was manufactured in', 
+        min_value=min_year, 
+        max_value=max_year, 
+        value=min_year
+    )
         Fuel = model_df["fuel"].unique()
         selected_fuel = st.selectbox('Select the fuel type', Fuel)
 
@@ -145,7 +154,7 @@ elif page == "Predictions":
     with col6:
         prev_owners = st.number_input('Enter number of previous owners', min_value=0, max_value=2, value=0)
 
-    with open('RandomForestModel.pkl', 'rb') as file:
+    with open("RandmForesModel.pkl", 'rb') as file:
         pipe = pickle.load(file)
     input_data = pd.DataFrame({
         'fuel': [selected_fuel],
