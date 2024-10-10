@@ -6,17 +6,71 @@ import firebase_admin
 import os
 from firebase_admin import credentials, auth, db, storage
 from dotenv import load_dotenv
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import r2_score
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import make_column_transformer
+from sklearn.ensemble import RandomForestRegressor
+import numpy as np
 from PIL import Image
 load_dotenv()
 
 DATABASE_URL = os.getenv("database_url")
-DROPBOX_URL = os.getenv("DROPBOX_URL")
-FILE_NAME = "RandomForestModel.pkl"
+STORAGE_BUCKET = os.getenv("storage")
 cred = credentials.Certificate("json_key.json")  
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
-        'databaseURL': DATABASE_URL
+        'databaseURL': DATABASE_URL,
+        'storageBucket': STORAGE_BUCKET
     })
+
+website_name = "PriceMyRide"
+icon_url = "https://t3.ftcdn.net/jpg/01/71/13/24/360_F_171132449_uK0OO5XHrjjaqx5JUbJOIoCC3GZP84Mt.jpg"
+
+st.markdown(
+    f"""
+    <div class="title-icon-container">
+        <img class="icon" src="{icon_url}" alt="Car Icon">
+        <div class="title">{website_name}</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+def upload_car_info():
+    car_image = st.file_uploader("Upload Car Image", type=['jpg', 'jpeg', 'png'])
+    image = None
+    
+    if car_image is not None:
+        image = Image.open(car_image)
+        st.image(image, caption='Uploaded Image.', use_column_width=True)
+
+    description = st.text_area("Enter a description about your car")
+    user_handle = st.session_state.get('handle', 'Unknown User')
+
+    if st.button("Upload"):
+        if car_image is not None and description:
+            try:
+                bucket = storage.bucket(STORAGE_BUCKET)
+                car_image.seek(0)  
+                image_file_name = f"car_images/{car_image.name}"
+                blob = bucket.blob(image_file_name)
+
+                blob.upload_from_file(car_image)
+                blob.make_public()  
+                
+                car_info_ref = db.reference("car_info")
+                car_info_ref.push({
+                    'image_url': blob.public_url,
+                    'description': description,
+                    'user_handle' : user_handle
+                })
+                st.success("Car information uploaded successfully!")
+            except Exception as e:
+                st.error(f"An error occurred while uploading: {e}")
+        else:
+            st.error("Please upload an image and enter a description.")
 
 def show_community_page():
     st.write("Check out what the other users are doing!")
@@ -41,6 +95,12 @@ def show_community_page():
 
 car = pd.read_csv("Clean_car.csv")
 car = car.loc[:, ~car.columns.str.contains('^Unnamed')]
+X = car.drop(columns='Price')
+y = car['Price']
+ohe = OneHotEncoder(handle_unknown = 'ignore')
+ohe.fit(X[['fuel', 'seller_type', 'transmission', 'Brand', 'Model', 'previous_owners']])
+column_trans = make_column_transformer((OneHotEncoder(categories=ohe.categories_, handle_unknown = 'ignore'), ['fuel', 'seller_type', 'transmission', 'Brand', 'Model', 'previous_owners']),
+                                           remainder='passthrough')
 
 def format_indian_number(number):
     if number >= 10000000:
@@ -110,6 +170,8 @@ if page == "Home":
     - 🔍 **Explore Models**: Compare different brands and models.
     - 📊 **Graphical Analysis**: Visualize the trends using graphs.
     """)
+    with st.expander("You can upload your car info here that you want to sell...", expanded = False):
+        upload_car_info()
 
 elif page == "Predictions":
     st.header("Predictions")
@@ -128,7 +190,7 @@ elif page == "Predictions":
         min_year = model_df["year_built"].min()
         max_year = model_df["year_built"].max()
         year_built = st.number_input(
-        'Select the year the car was manufactured in', 
+        'Select the year the car was manufactured in:', 
         min_value=min_year, 
         max_value=max_year, 
         value=min_year
@@ -152,20 +214,16 @@ elif page == "Predictions":
         transmission = st.selectbox('Select the transmission type of the car', trans)
 
     with col6:
-        prev_owners = st.number_input('Enter number of previous owners', min_value=0, max_value=2, value=0)
+        prev_owners = st.selectbox('Enter number of previous owners:', ['Zero', 'One', 'Two'])
 
-    with open("RandomForestModel.pkl", 'rb') as file:
-        pipe = pickle.load(file)
-    input_data = pd.DataFrame({
-        'fuel': [selected_fuel],
-        'seller_type': [seller_type],
-        'transmission': [transmission],
-        'previous_owners': [str(prev_owners)], 
-        'Brand': [selected_brand],
-        'Model': [selected_model],
-        'year_built': [year_built],
-        'km_driven': [distance_driven]
-    })
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=370)
+    rf = RandomForestRegressor(random_state=370)
+    pipe = make_pipeline(column_trans, rf)
+    pipe.fit(X_train, y_train)
+
+    input_data = pd.DataFrame([[selected_fuel, seller_type, transmission, prev_owners, selected_brand, selected_model, year_built, distance_driven]],
+                            columns=['fuel', 'seller_type', 'transmission', 'previous_owners', 'Brand', 'Model', 'year_built', 'km_driven'])
+    
     if st.button('Predict the price'):
         st.markdown("""
         <style>
@@ -190,8 +248,12 @@ elif page == "Predictions":
             pred = pipe.predict(input_data)
             st.balloons()
             st.success(f'The estimated value of the car is: Rs {format_indian_number(pred[0])}')
+            st.info("Greatness takes some time to deliver...")
         except ValueError as e:
             st.error(f"Error: {str(e)}") 
+
+    with st.expander("You can upload your car info here that you want to sell...", expanded = False):
+        upload_car_info()
 
 elif page == "Explore Models":
     st.write("### Select Car Brands")
@@ -240,34 +302,26 @@ elif page == "Explore Models":
                 )
                 st.plotly_chart(fig2, use_container_width=True)
 
-                avg_price_per_model = filtered_data.groupby(['Model', 'Brand']).agg(
-                avg_price=('Price', 'mean')
-            ).reset_index()
-                fig3 = px.bar(
-                    avg_price_per_model,
-                    x='Model',
-                    y='avg_price',
-                    color = 'Brand',
-                     barmode='group',
-                    title='Price Distribution by Brand',
-                    labels={'avg_price': 'Average Price'}
-                )
-                st.plotly_chart(fig3, use_container_width=True)
         else:
             st.warning("Please select atleast one car Model.")
     else:
         st.warning("Please select atleast one car Brand.")
 
+    with st.expander("You can upload your car info here that you want to sell...", expanded = False):
+        upload_car_info()
+
 elif page == "Community":
     st.header("Community")
     show_community_page()
+    with st.expander("You can upload your car info here that you want to sell...", expanded = False):
+        upload_car_info()
 
 elif page == "About":
     st.header("About")
     st.write("""
     ### About This Web Service
     - This web service utilizes machine learning to predict the prices of used cars based on various attributes. 
-    - It uses the concepts of Random Forests and Grid Search CV to predict the prices of cars based on the attributes
+    - It uses the concepts of Random Forests to predict the prices of cars based on the attributes
     provided by the user which can produce highly varying results if changed. 
     - The data was taken from the [Kaggle](https://www.kaggle.com/). 
     - It provides insights into the pricing trends and allows users to explore car models. 
