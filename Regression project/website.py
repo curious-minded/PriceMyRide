@@ -154,7 +154,7 @@ elif page == "Predictions":
     with col6:
         prev_owners = st.number_input('Enter number of previous owners', min_value=0, max_value=2, value=0)
 
-    with open("RandmForesModel.pkl", 'rb') as file:
+    with open("RandomForestModel.pkl", 'rb') as file:
         pipe = pickle.load(file)
     input_data = pd.DataFrame({
         'fuel': [selected_fuel],
