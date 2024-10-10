@@ -6,7 +6,6 @@ from firebase_admin import credentials, auth, db, storage
 import importlib.util
 import requests
 import os
-from PIL import Image
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -47,7 +46,7 @@ if not firebase_admin._apps:
         'storageBucket': STORAGE_BUCKET
     })
 
-website_name = "PriceMyRide"
+website_name = "Welcome to PriceMyRide"
 icon_url = "https://t3.ftcdn.net/jpg/01/71/13/24/360_F_171132449_uK0OO5XHrjjaqx5JUbJOIoCC3GZP84Mt.jpg"
 
 st.markdown(
@@ -87,7 +86,8 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-st.markdown(
+def login_page():
+    st.markdown(
     f"""
     <div class="title-icon-container">
         <img class="icon" src="{icon_url}" alt="Car Icon">
@@ -96,42 +96,6 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-def upload_car_info():
-    car_image = st.file_uploader("Upload Car Image", type=['jpg', 'jpeg', 'png'])
-    image = None
-    
-    if car_image is not None:
-        image = Image.open(car_image)
-        st.image(image, caption='Uploaded Image.', use_column_width=True)
-
-    description = st.text_area("Enter a description about your car")
-    user_handle = st.session_state.get('handle', 'Unknown User')
-
-    if st.button("Upload"):
-        if car_image is not None and description:
-            try:
-                bucket = storage.bucket(STORAGE_BUCKET)
-                car_image.seek(0)  
-                image_file_name = f"car_images/{car_image.name}"
-                blob = bucket.blob(image_file_name)
-
-                blob.upload_from_file(car_image)
-                blob.make_public()  #
-                
-                car_info_ref = db.reference("car_info")
-                car_info_ref.push({
-                    'image_url': blob.public_url,
-                    'description': description,
-                    'user_handle' : user_handle
-                })
-                st.success("Car information uploaded successfully!")
-            except Exception as e:
-                st.error(f"An error occurred while uploading: {e}")
-        else:
-            st.error("Please upload an image and enter a description.")
-
-def login_page():
     with st.expander("Help", expanded=False):
         st.write(""" 
         **Instructions:**
@@ -199,8 +163,6 @@ def main_website():
     spec = importlib.util.spec_from_file_location("main_website", main_website_path)
     main_website_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(main_website_module)
-    with st.expander("You can upload your car info here that you want to sell...", expanded = False):
-        upload_car_info()
 
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
