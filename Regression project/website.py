@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-import pickle
 import plotly.express as px
 import firebase_admin
+from datetime import datetime
 import os
 from firebase_admin import credentials, auth, db, storage
 from dotenv import load_dotenv
@@ -54,7 +54,7 @@ def upload_car_info():
             try:
                 bucket = storage.bucket(STORAGE_BUCKET)
                 car_image.seek(0)  
-                image_file_name = f"car_images/{car_image.name}"
+                image_file_name = f"car_info/{car_image.name}"
                 blob = bucket.blob(image_file_name)
 
                 blob.upload_from_file(car_image)
@@ -62,9 +62,10 @@ def upload_car_info():
                 
                 car_info_ref = db.reference("car_info")
                 car_info_ref.push({
-                    'image_url': blob.public_url,
-                    'description': description,
-                    'user_handle' : user_handle
+                    'image_url' : blob.public_url,
+                    'description' : description,
+                    'user_handle' : user_handle,
+                    'uploaded_on' : datetime.now().isoformat()
                 })
                 st.success("Car information uploaded successfully!")
             except Exception as e:
@@ -77,21 +78,33 @@ def show_community_page():
     try:
         car_info_ref = db.reference("car_info")
         car_data = car_info_ref.get()
+
         if car_data:
-            for car_id, car_info in car_data.items():
+            car_data_sorted = sorted(
+                car_data.items(), 
+                key=lambda x: x[1].get('uploaded_on', ''), 
+                reverse=True 
+            )
+
+            for car_id, car_info in car_data_sorted:
                 image_url = car_info.get('image_url')
                 description = car_info.get('description', 'No description provided.')
                 handle = car_info.get('user_handle')
+                uploaded_at = car_info.get('uploaded_on', 'Unknown upload date')
+
                 if image_url:
                     st.subheader(f"Posted by {handle}:")
                     st.image(image_url, caption=description, use_column_width=True)
+                    st.write(f"Uploaded on: {uploaded_at}")
                 else:
                     st.write("No image available")
+
                 st.markdown("---")  
         else:
             st.write("No user has uploaded anything.")
     except Exception as e:
         st.error(f"An error occurred while fetching community data: {e}")
+
 
 car = pd.read_csv("Clean_car.csv")
 car = car.loc[:, ~car.columns.str.contains('^Unnamed')]
