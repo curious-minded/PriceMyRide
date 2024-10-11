@@ -110,10 +110,6 @@ car = pd.read_csv("Clean_car.csv")
 car = car.loc[:, ~car.columns.str.contains('^Unnamed')]
 X = car.drop(columns='Price')
 y = car['Price']
-ohe = OneHotEncoder(handle_unknown = 'ignore')
-ohe.fit(X[['fuel', 'seller_type', 'transmission', 'Brand', 'Model', 'previous_owners']])
-column_trans = make_column_transformer((OneHotEncoder(categories=ohe.categories_, handle_unknown = 'ignore'), ['fuel', 'seller_type', 'transmission', 'Brand', 'Model', 'previous_owners']),
-                                           remainder='passthrough')
 
 def format_indian_number(number):
     if number >= 10000000:
@@ -229,10 +225,6 @@ elif page == "Predictions":
     with col6:
         prev_owners = st.selectbox('Enter number of previous owners:', ['Zero', 'One', 'Two'])
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=370)
-    rf = RandomForestRegressor(random_state=370)
-    pipe = make_pipeline(column_trans, rf)
-    pipe.fit(X_train, y_train)
     input_data = pd.DataFrame([[selected_fuel, seller_type, transmission, prev_owners, selected_brand, selected_model, year_built, distance_driven]],
                             columns=['fuel', 'seller_type', 'transmission', 'previous_owners', 'Brand', 'Model', 'year_built', 'km_driven'])
     
@@ -257,6 +249,14 @@ elif page == "Predictions":
         </style>
         """, unsafe_allow_html=True)
         try:
+            ohe = OneHotEncoder(handle_unknown = 'ignore')
+            ohe.fit(X[['fuel', 'seller_type', 'transmission', 'Brand', 'Model', 'previous_owners']])
+            column_trans = make_column_transformer((OneHotEncoder(categories=ohe.categories_, handle_unknown = 'ignore'), ['fuel', 'seller_type', 'transmission', 'Brand', 'Model', 'previous_owners']),
+                                           remainder='passthrough')
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=370)
+            rf = RandomForestRegressor(random_state=370)
+            pipe = make_pipeline(column_trans, rf)
+            pipe.fit(X_train, y_train)
             pred = pipe.predict(input_data)
             st.balloons()
             st.success(f'The estimated value of the car is: Rs {format_indian_number(pred[0])}')
