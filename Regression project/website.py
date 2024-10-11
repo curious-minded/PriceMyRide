@@ -115,9 +115,9 @@ ohe.fit(X[['fuel', 'seller_type', 'transmission', 'Brand', 'Model', 'previous_ow
 column_trans = make_column_transformer((OneHotEncoder(categories=ohe.categories_, handle_unknown = 'ignore'), ['fuel', 'seller_type', 'transmission', 'Brand', 'Model', 'previous_owners']),
                                            remainder='passthrough')
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20, random_state=370)
-    rf = RandomForestRegressor(random_state=370)
-    pipe = make_pipeline(column_trans, rf)
-    pipe.fit(X_train, y_train)
+rf = RandomForestRegressor(random_state=370)
+pipe = make_pipeline(column_trans, rf)
+pipe.fit(X_train, y_train)
 
 def format_indian_number(number):
     if number >= 10000000:
