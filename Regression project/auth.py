@@ -2,7 +2,7 @@ import streamlit as st
 st.set_page_config(page_title = "PriceMyRide", page_icon = "🏎️")
 from datetime import datetime 
 import firebase_admin
-from firebase_admin import credentials, auth, db, storage
+from firebase_admin import credentials, auth, db
 import importlib.util
 import requests
 import os
@@ -12,7 +12,6 @@ load_dotenv()
 FIREBASE_API_KEY = os.getenv("apiKey")
 FIREBASE_AUTH_URL = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
 DATABASE_URL = os.getenv("database_url")
-STORAGE_BUCKET = os.getenv("storage")
 
 def authenticate_user(email, password):
     payload = {
@@ -42,8 +41,7 @@ def authenticate_user(email, password):
 cred = credentials.Certificate("json_key.json")  
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred, {
-        'databaseURL': DATABASE_URL,
-        'storageBucket': STORAGE_BUCKET
+        'databaseURL': DATABASE_URL
     })
 
 website_name = "Welcome to PriceMyRide"
