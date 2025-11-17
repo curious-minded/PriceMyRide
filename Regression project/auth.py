@@ -1,176 +1,194 @@
 import streamlit as st
-st.set_page_config(page_title = "PriceMyRide", page_icon = "🏎️")
-from datetime import datetime 
-import firebase_admin
-from firebase_admin import credentials, auth, db
-import importlib.util
 import requests
+from datetime import datetime
 import os
 from dotenv import load_dotenv
-load_dotenv()
+import importlib.util
+import firebase_admin
+from firebase_admin import credentials, db
 
+# Load env
+load_dotenv()
 FIREBASE_API_KEY = os.getenv("apiKey")
-FIREBASE_AUTH_URL = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
 DATABASE_URL = os.getenv("database_url")
 
-def authenticate_user(email, password):
-    payload = {
-        "email": email,
-        "password": password,
-        "returnSecureToken": True
-    }
-    response = requests.post(FIREBASE_AUTH_URL, json=payload)
-    auth_response = response.json()
-    
-    if "error" in auth_response:
-        return {"error": auth_response["error"]}
-    
-    id_token = auth_response.get("idToken")
-    local_id = auth_response.get("localId")  
-    user_ref = db.reference(f'users/{local_id}')
-    user_profile = user_ref.get()
-    
-    if user_profile:
-        return {
-            "handle": user_profile.get("handle"),
-            "email": user_profile.get("email")
-        }
-    else:
-        return {"error": "User profile not found"}
+# Firebase REST endpoints
+SIGNUP_URL = (
+    f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={FIREBASE_API_KEY}"
+)
+LOGIN_URL = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}"
+LOOKUP_URL = (
+    f"https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={FIREBASE_API_KEY}"
+)
+SEND_OOB_URL = f"https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key={FIREBASE_API_KEY}"
 
-cred = credentials.Certificate("json_key.json")  
+# Initialize Firebase Admin for Realtime Database
+cred = credentials.Certificate("json_key.json")
 if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred, {
-        'databaseURL': DATABASE_URL
-    })
+    firebase_admin.initialize_app(cred, {"databaseURL": DATABASE_URL})
 
-website_name = "Welcome to PriceMyRide"
+# UI variables
+website_name = "PriceMyRide"
 icon_url = "https://t3.ftcdn.net/jpg/01/71/13/24/360_F_171132449_uK0OO5XHrjjaqx5JUbJOIoCC3GZP84Mt.jpg"
 
 st.markdown(
     """
-    <style>
-        .title-icon-container {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 10px 0;
-        }
-        .title-icon-container .icon {
-            width: 50px;
-            margin-right: 10px;
-        }
-        .title-icon-container .title {
-            font-size: 40px;
-            font-weight: bold;
-            color: #00BFFF;
-        }
-        .stButton>button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 12px;
-        }
-        .stButton>button:hover {
-            background-color: #32CD32;
-        }
-    </style>
-    """, unsafe_allow_html=True
+<style>
+.title-icon-container { display: flex; align-items: center; padding: 10px 0; }
+.title-icon-container .icon { width: 50px; margin-right: 10px; }
+.title-icon-container .title { font-size: 40px; font-weight: bold; color: #00BFFF; }
+.stButton>button { background-color: #4CAF50; color: white; padding: 10px 20px; border-radius: 12px; }
+.stButton>button:hover { background-color: #32CD32; }
+</style>
+""",
+    unsafe_allow_html=True,
 )
 
+
+# Helper functions
+def send_verification_email(id_token):
+    payload = {"requestType": "VERIFY_EMAIL", "idToken": id_token}
+    requests.post(SEND_OOB_URL, json=payload)
+
+
+def send_password_reset_email(email):
+    payload = {"requestType": "PASSWORD_RESET", "email": email}
+    requests.post(SEND_OOB_URL, json=payload)
+
+
+def signup_user(email, password, display_name):
+    payload = {
+        "email": email,
+        "password": password,
+        "displayName": display_name,
+        "returnSecureToken": True,
+    }
+    resp = requests.post(SIGNUP_URL, json=payload).json()
+    if "error" in resp:
+        return {"error": resp["error"]["message"]}
+
+    # Send email verification
+    send_verification_email(resp["idToken"])
+
+    # Save profile to Realtime Database
+    user_id = resp["localId"]
+    db.reference("users").child(user_id).set(
+        {
+            "handle": display_name,
+            "email": email,
+            "created_at": datetime.now().isoformat(),
+        }
+    )
+    return {"success": True}
+
+
+def authenticate_user(email, password):
+    payload = {"email": email, "password": password, "returnSecureToken": True}
+    resp = requests.post(LOGIN_URL, json=payload).json()
+    if "error" in resp:
+        return {"error": resp["error"]["message"]}
+
+    # Check email verification
+    lookup_resp = requests.post(LOOKUP_URL, json={"idToken": resp["idToken"]}).json()
+    user_info = lookup_resp["users"][0]
+    if not user_info["emailVerified"]:
+        return {"error": "Email not verified. Please check your inbox."}
+
+    return {
+        "success": True,
+        "handle": user_info.get("displayName", "User"),
+        "idToken": resp["idToken"],
+    }
+
+
+# Streamlit login/signup
 def login_page():
     st.markdown(
-    f"""
+        f"""
     <div class="title-icon-container">
         <img class="icon" src="{icon_url}" alt="Car Icon">
         <div class="title">{website_name}</div>
     </div>
     """,
-    unsafe_allow_html=True
-)
-    with st.expander("Help", expanded=False):
-        st.write(""" 
-        **Instructions:**
-        - If you do not have an account please SignUp. Please use a valid email.
-        - Ensure that the password is at least 6 characters long while creating an account.
-        - One should use digits or special symbols as well to make the password strong.
-        - You can always change the theme/mode according to your preference from top right.
-        """)
-        
-    choice = st.selectbox('Login/SignUp', ['Login', 'SignUp'])
-    email = st.text_input('Please enter your email address')
-    password = st.text_input('Please enter your password', type='password')
-    
-    if choice == 'SignUp':
-        confirm_pass = st.text_input('Please confirm your password', type='password')
-        handle = st.text_input('Please input your Username', value='Default')
-        
-        if st.button('Create Account'):
-            if password != confirm_pass:
-                st.error('Passwords do not match. Please try again.')
-            else:
-                all_users_ref = db.reference('users')
-                all_users = all_users_ref.get()
-                
-                if all_users:
-                    existing_handles = [user_data['handle'] for user_data in all_users.values() if 'handle' in user_data]
-                    if handle in existing_handles:
-                        st.error(f"The handle '{handle}' is already taken. Please choose another one.")
-                        return
-                try:
-                    user = auth.create_user(email=email, password=password)
-                    st.success('Account created successfully.')
-                    
-                    user_ref = db.reference('users').child(user.uid)
-                    user_ref.set({
-                        'handle': handle,
-                        'email': email,
-                        'created_at': datetime.now().isoformat()
-                    })
-                    st.session_state['handle'] = handle
-                    st.session_state['logged_in'] = True
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"An error occurred: {e}")
+        unsafe_allow_html=True,
+    )
 
-    elif choice == 'Login':
-        if st.button('Login'):
-            response = authenticate_user(email, password)
-            if "error" in response:
-                error_message = response["error"].get("message", "Login failed")
-                st.error(f"Error logging in: {error_message}")
+    with st.expander("Help (New Users)", expanded=False):
+        st.write(
+            """
+        - If you are new, please **SignUp** with a valid email address.
+        - After signing up, check your inbox and **verify your email**.
+        - Once verified, login using your credentials.
+        - You can change the theme from the top-right menu.
+        - Use **Forgot Password** if you need to reset your password.
+        """
+        )
+
+    choice = st.selectbox(
+        "Login / SignUp / Forgot Password", ["Login", "SignUp", "Forgot Password"]
+    )
+    email = st.text_input("Email")
+    password = (
+        st.text_input("Password", type="password")
+        if choice != "Forgot Password"
+        else None
+    )
+
+    if choice == "SignUp":
+        confirm_pass = st.text_input("Confirm Password", type="password")
+        handle = st.text_input("Username", value="Default")
+        if st.button("Create Account"):
+            if password != confirm_pass:
+                st.error("Passwords do not match.")
+                return
+            resp = signup_user(email, password, handle)
+            if "error" in resp:
+                st.error(f"Error: {resp['error']}")
             else:
-                st.success('Logged in successfully.')
-                st.session_state['logged_in'] = True
-                st.session_state['handle'] = response.get('handle', 'User')
+                st.success(
+                    "Account created. Check your inbox or spam folder for verification email. Once verified, continue with login."
+                )
+
+    elif choice == "Login":
+        if st.button("Login"):
+            resp = authenticate_user(email, password)
+            if "error" in resp:
+                st.error(resp["error"])
+            else:
+                st.session_state["logged_in"] = True
+                st.session_state["handle"] = resp["handle"]
+                st.success(f"Welcome {resp['handle']}!")
                 st.rerun()
 
-    st.write("""
-    ---
-    *© 2024 PriceMyRide. The most accurate car price predictor. All rights reserved.*
-    """)
+    elif choice == "Forgot Password":
+        if st.button("Send Reset Email"):
+            send_password_reset_email(email)
+            st.info(
+                f"Password reset message has been sent to your registered email. Once your password is reset, continue with login."
+            )
 
+    st.write("---")
+    st.write("*© 2024 PriceMyRide. All rights reserved.*")
+
+
+# Main website loader
 def main_website():
-    main_website_path = 'website.py' 
+    main_website_path = "website.py"
     spec = importlib.util.spec_from_file_location("main_website", main_website_path)
     main_website_module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(main_website_module)
 
-if 'logged_in' not in st.session_state:
-    st.session_state['logged_in'] = False
 
-if st.session_state['logged_in']:
+# Initialize session
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+
+if st.session_state["logged_in"]:
     main_website()
-    if st.sidebar.button('Logout', key='logout', help='Click to logout'):
-        st.session_state['logged_in'] = False
-        st.session_state.pop('handle', None) 
-        st.success("You've been logged out.")
+    if st.sidebar.button("Logout"):
+        st.session_state["logged_in"] = False
+        st.session_state.pop("handle", None)
+        st.success("Logged out successfully.")
         st.rerun()
 else:
     login_page()
