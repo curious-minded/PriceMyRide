@@ -45,7 +45,7 @@ def upload_car_info():
     image = None
     if car_image is not None:
         image = Image.open(car_image)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+        st.image(image, caption="Uploaded Image", use_container_width=True)
 
     description = st.text_area("Enter a short description about your car")
     user_handle = st.session_state.get("handle", "Anonymous User")
@@ -99,7 +99,7 @@ def show_community_page():
 
                 if image_url:
                     st.subheader(f"{handle} uploaded:")
-                    st.image(image_url, caption=description, use_column_width=True)
+                    st.image(image_url, caption=description, use_container_width=True)
                     st.caption(f"Uploaded on: {uploaded_at}")
                 st.markdown("---")
         else:
@@ -395,3 +395,4 @@ elif page == "About":
     )
     st.markdown("---")
     st.caption("© 2024 PriceMyRide. All rights reserved.")
+
